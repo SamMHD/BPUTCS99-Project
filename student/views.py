@@ -94,9 +94,49 @@ class Dashboard(UserPassesTestMixin, View):
             }
         )
 
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class CourseIndex(UserPassesTestMixin, View):
+    raise_exception = True
 
-@method_decorator(login_required(login_url='student-login'), name='dispatch')
-class Practices(UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.groups.filter(name='student')
+
+    def get(self, request, *args, **kwargs):
+        courses = Course.objects.all()
+        for i in range(len(courses)):
+            courses[i].created_at = convert_to_jalali(courses[i].created_at)
+            courses[i].owner_name = Teacher.objects.get(id=courses[i].owner_id)
+        
+        return render(
+            request, 
+            'student/course/index.html', 
+            {
+                'videos': courses
+            }
+        )
+
+
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class CourseShow(UserPassesTestMixin, View):
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='student')
+
+    def get(self, request, *args, **kwargs):
+        course = Course.objects.get(id=kwargs['pk'])
+        course.owner_name = Teacher.objects.get(id=course.owner_id)
+        return render(
+            request, 
+            'student/course/detail.html', 
+            {
+                'video': course
+            }
+        )
+
+
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class Exercise(UserPassesTestMixin, View):
     raise_exception = True
 
     def test_func(self):
@@ -111,7 +151,7 @@ class Practices(UserPassesTestMixin, View):
             exercises[i].owner_name = Teacher.objects.get(id=exercises[i].owmner_id)
             try:
                 exercises[i].score = Answer.objects.get(
-                    practice_id=exercises[i].id, 
+                    exercise_id=exercises[i].id, 
                     student_id=student.id
                 ).score
                 exercises[i].is_send_answer = True
@@ -120,14 +160,14 @@ class Practices(UserPassesTestMixin, View):
 
         return render(
             request, 
-            'student/practice/index.html', 
+            'student/exercise/index.html', 
             {
                 'practices': exercises
             }
         )
 
 
-@method_decorator(login_required(login_url='student-login'), name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class ExerciseAnswer(UserPassesTestMixin, View):
     raise_exception = True
 
@@ -163,6 +203,9 @@ class ExerciseAnswer(UserPassesTestMixin, View):
         )
         ans.save()
         return redirect(reverse('exercise-index'))
+
+
+
 
 
 def convert_to_jalali(datetime):
