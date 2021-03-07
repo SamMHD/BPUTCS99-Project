@@ -18,10 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 
+from django.shortcuts import redirect
+from django.urls import reverse
+
+def main(request):
+    return redirect(reverse('login'))
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('teachers/', include('teacher.urls')),
     path('', include('student.urls')),
+    path('', main, name='main-page')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # urlpatterns = [
