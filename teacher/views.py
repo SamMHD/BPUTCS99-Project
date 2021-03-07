@@ -63,3 +63,21 @@ class Logout(UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect(reverse('teacher-login'))
+
+
+@method_decorator(login_required(login_url='teacher-login'), name='dispatch')
+class Dashboard(UserPassesTestMixin, View):
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='teacher')
+
+    def get(self, request, *args, **kwargs):
+        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        data = {
+            'practices_count': Exercise.objects.filter(owner_id=owner_id).count(),
+            'videos_count': Course.objects.filter(owner_id=owner_id).count(),
+            'students_count': Student.objects.all().count(),
+        }
+        return render(request, 'teacher/dashboard.html', {'data': data})
+
