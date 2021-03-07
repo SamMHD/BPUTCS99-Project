@@ -74,3 +74,97 @@ class Logout(UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect(reverse('login'))
+
+
+@method_decorator(login_required(login_url='student-login'), name='dispatch')
+class Dashboard(UserPassesTestMixin, View):
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='student')
+
+    def get(self, request, *args, **kwargs):
+        return render(
+            request, 
+            'student/dashboard.html', 
+            {
+                'data': {
+                    'practices_count': Exercise.objects.all().count(),
+                    'videos_count': Course.objects.all().count(),
+                }
+            }
+        )
+
+
+@method_decorator(login_required(login_url='student-login'), name='dispatch')
+class Practices(UserPassesTestMixin, View):
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='student')
+
+    def get(self, request, *args, **kwargs):
+        exercises = Exercise.objects.all()
+        student = Student.objects.get(user_id=request.user.id)
+        for i in range(len(exercises)):
+            exercises[i].deadline = convert_to_jalali(exercises[i].deadline)
+            exercises[i].created_at = convert_to_jalali(exercises[i].created_at)
+            exercises[i].owner_name = Teacher.objects.get(id=exercises[i].owmner_id)
+            try:
+                exercises[i].score = Answer.objects.get(
+                    practice_id=exercises[i].id, 
+                    student_id=student.id
+                ).score
+                exercises[i].is_send_answer = True
+            except ObjectDoesNotExist:
+                exercises[i].is_send_answer = False
+
+        return render(
+            request, 
+            'student/practice/index.html', 
+            {
+                'practices': exercises
+            }
+        )
+
+
+@method_decorator(login_required(login_url='student-login'), name='dispatch')
+class ExerciseAnswer(UserPassesTestMixin, View):
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='student')
+
+    def get(self, request, *args, **kwargs):
+        excercise = Exercise.objects.get(id=kwargs['pk'])
+        try:
+            excercise.answer = Answer.objects.get(
+                student_id=Student.objects.get(user_id=request.user.id).id,
+                excercise_id=excercise.id
+            ).file
+            excercise.is_send_answer = True
+        
+        except ObjectDoesNotExist:
+            excercise.is_send_answer = False
+        
+        excercise.due = convert_to_jalali(excercise.due) 
+        return render(
+            request, 
+            'student/excercise/answer.html', 
+            {
+                'practice': excercise
+            }
+        )
+
+    def post(self, request, *args, **kwargs):
+        ans = Answer(
+            file=request.FILES['answerFile'], 
+            student_id=Student.objects.get(user_id=request.user.id).id,
+            excercise_id=kwargs['pk']
+        )
+        ans.save()
+        return redirect(reverse('exercise-index'))
+
+
+def convert_to_jalali(datetime):
+    return jdatetime.datetime.fromgregorian(
+        datetime=datetime, locale='fa_IR').strftime("%a، %d %b %Y، %H:%M")
