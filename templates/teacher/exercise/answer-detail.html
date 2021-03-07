@@ -1,0 +1,133 @@
+{% extends "teacher/base.html" %} 
+
+{% block title %} پاسخ تمرین {% endblock %}
+
+{% block sidebar %} 
+    {% include "teacher/layout/sidebar.html" %}
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "teacher/layout/breadcrumb.html" with breadcrumb_items="داشبورد تمرین-جدید" title="ثبت نمره تمرین" %}
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="row">
+        <div class="col">
+        <div class="card card-primary">
+            <div class="card-header">
+            <h3 class="card-title">ثبت نمره تمرین «{{ practice.title }}»</h3>
+            </div>
+            <form role="form" method="post" enctype="multipart/form">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary"><i class="fa fa-user"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">نام دانشجو:</span>
+                                    <span class="info-box-number">{{ student.name }}</span>
+                                </div>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">شماره دانشجویی:</span>
+                                    <span class="info-box-number">{{ student.student_number }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-sm-12">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger"><i class="fa fa-calendar"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">ددلاین تمرین:</span>
+                                    <span class="info-box-number">{{ practice.due_date }}</span>
+                                </div>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">زمان ارسال پاسخ:</span>
+                                    <span class="info-box-number">{{ answer.created_at }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fa fa-download"></i></span>
+                                <div class="info-box-content">
+                                <span class="info-box-text">پاسخ ارسال شده:</span>
+                                    <a download href="{{ MEDIA_URL }}{{ answer.file }}">دانلود</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-sm-12">
+                            <div class="form-group">
+                                <label for="scoreInput">نمره تمرین</label>
+                                <input name="score" type="number" step="any" class="form-control" id="scoreInput" placeholder="نمره تمرین را وارد کنید">
+                            </div>
+                            {% if score_error %}
+                            <div class="alert alert-danger">
+                                {{ score_error }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">ثبت نمره</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  function doFormat(x, pattern, mask) {
+  var strippedValue = x.replace(/[^0-9]/g, "");
+  var chars = strippedValue.split('');
+  var count = 0;
+
+  var formatted = '';
+  for (var i=0; i<pattern.length; i++) {
+    const c = pattern[i];
+    if (chars[count]) {
+      if (/\*/.test(c)) {
+        formatted += chars[count];
+        count++;
+      } else {
+        formatted += c;
+      }
+    } else if (mask) {
+      if (mask.split('')[i])
+        formatted += mask.split('')[i];
+    }
+  }
+  return formatted;
+}
+
+document.querySelectorAll('[data-mask]').forEach(function(e) {
+  function format(elem) {
+    const val = doFormat(elem.value, elem.getAttribute('data-format'));
+    elem.value = doFormat(elem.value, elem.getAttribute('data-format'), elem.getAttribute('data-mask'));
+    
+    if (elem.createTextRange) {
+      var range = elem.createTextRange();
+      range.move('character', val.length);
+      range.select();
+    } else if (elem.selectionStart) {
+      elem.focus();
+      elem.setSelectionRange(val.length, val.length);
+    }
+  }
+  e.addEventListener('keyup', function() {
+    format(e);
+  });
+  e.addEventListener('keydown', function() {
+    format(e);
+  });
+  format(e)
+});
+</script>
+{% endblock %}
+

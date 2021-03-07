@@ -1,0 +1,59 @@
+{% extends "student/base.html" %} 
+
+{% block title %} ویدیوها {% endblock %}
+
+{% block sidebar %} 
+    {% include "student/layout/sidebar.html" with nav_active_item="course-index" %}
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "student/layout/breadcrumb.html" with breadcrumb_items="داشبورد لیست ویدیوها" title="لیست ویدیوها" %}
+{% endblock %}
+
+{% block content %}
+<section class="content">
+  <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">ویدیوها</h3>
+          </div>
+          <div class="card-body table-responsive p-0">
+            {% if success_created %}
+            <div class="alert alert-success">
+                {{ success_created }}
+            </div>
+            {% endif %}
+            <table class="table table-hover">
+              <tr>
+                <th>شماره</th>
+                <th>نام استاد</th>
+                <th>عنوان ویدیو</th>
+                <th>زمان آپلود ویدیو</th>
+                <th></th>
+              </tr>
+              {% for video in videos %}
+              <tr>
+                <td>{{ video.id }}</td>
+                <td>{{ video.teacher_name }}</td>
+                <td>{{ video.title }}</td>
+                <td>
+                  <span class="badge badge-danger"
+                    >{{ video.created_at }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-warning btn-sm" onclick="location.href += '/{{ video.id }}'">
+                    <i class="fa fa-film"></i>
+                    مشاهده ویدیو
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock %}

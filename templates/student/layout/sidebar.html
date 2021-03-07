@@ -1,0 +1,79 @@
+<aside class="main-sidebar sidebar-light-info elevation-4">
+  <a href="{% url 'dashboard' %}" class="brand-link">
+    <span class="brand-text font-weight-light">پنل دانشجو</span>
+  </a>
+  <div class="sidebar" style="direction: ltr">
+    <div style="direction: rtl">
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <button type="button" class="btn btn-danger text-center" style="border-radius: 50%" onclick="location.href = '{% url 'logout' %}'"><i class="fa fa-sign-out"></i></button>
+        </div>
+        <div class="info mt-1">
+          <a href="#" class="d-block">{{ user.username }}</a>
+        </div>
+      </div>
+      <nav class="mt-2">
+        <ul
+          class="nav nav-pills nav-sidebar flex-column"
+          data-widget="treeview"
+          role="menu"
+          data-accordion="false"
+        >
+          <li class="nav-item">
+            <a
+              href="{% url 'dashboard' %}"
+              class="nav-link {% if nav_active_item == 'dashboard' %}active{% endif %}"
+            >
+              <i class="nav-icon fa fa-home"></i>
+              <p>داشبورد</p>
+            </a>
+          </li>
+          <li
+            class="nav-item has-treeview {% if nav_active_item == 'exercise-index' or nav_active_item == 'exercise-create' %}menu-open{% endif %}"
+          >
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa  fa-pencil"></i>
+              <p>
+                تمرین
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'exercise-index' %}"
+                  class="nav-link {% if nav_active_item == 'exercise-index' %}active{% endif %}"
+                >
+                  <i class="fa fa-list nav-icon"></i>
+                  <p>همه تمرین ها</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li
+            class="nav-item has-treeview {% if nav_active_item == 'course-index' or nav_active_item == 'courses-create' %}menu-open{% endif %}"
+          >
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-film"></i>
+              <p>
+                ویدیو
+                <i class="right fa fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a
+                  href="{% url 'course-index' %}"
+                  class="nav-link {% if nav_active_item == 'course-index' %}active{% endif %}"
+                >
+                  <i class="fa fa-list nav-icon"></i>
+                  <p>همه ویدیوها</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</aside>

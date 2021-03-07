@@ -1,0 +1,91 @@
+{% extends "student/base.html" %}
+
+{% block title %} تمرین ها {% endblock %}
+
+{% block sidebar %} 
+    {% include "student/layout/sidebar.html" with nav_active_item="exercise-index" %}
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "student/layout/breadcrumb.html" with breadcrumb_items="داشبورد تمرینها" title="تمرین ها" %}
+{% endblock %}
+
+{% block content %}
+<section class="content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">تمرین ها</h3>
+        </div>
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <tr>
+              <th class="text-center">شماره</th>
+              <th class="text-center">نام استاد</th>
+              <th class="text-center">عنوان</th>
+              <th class="text-center">توضیحات</th>
+              <th class="text-center">وضعیت ارسال پاسخ</th>
+              <th class="text-center">نمره</th>
+              <th class="text-center">ددلاین تحویل</th>
+              {% comment %} <th>تاریخ ایجاد تمرین</th> {% endcomment %}
+              <th></th>
+            </tr>
+            {% for practice in practices %}
+            <tr>
+              <td class="text-center">{{ practice.id }}</td>
+              <td class="text-center">{{ practice.teacher_name }}</td>
+              <td class="text-center">{{ practice.title }}</td>
+              <td class="text-center">{{ practice.detailes }}</td>
+              <td class="text-center">
+                {% if practice.is_send_answer %}
+                <span class="badge badge-success"
+                  >ارسال شده
+                </span>
+                {% else %}
+                <span class="badge badge-danger"
+                  >ارسال نشده
+                </span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+              {% if practice.score == None %}
+                <span class="badge badge-danger"
+                  >ثبت نشده
+                </span>
+              {% else %}
+                {{ practice.score }}
+              {% endif %}
+              </td>
+              <td class="text-center">
+                <span class="badge badge-info"
+                  >{{ practice.due_date }}
+                </span>
+              </td>
+              {% comment %} <td>
+                <span class="badge badge-success"
+                  >{{ practice.created_at }}
+                </span>
+              </td> {% endcomment %}
+              <td class="text-center">
+                {% if not practice.is_send_answer %}
+                <button class="btn btn-warning btn-sm" onclick="location.href += '/{{ practice.id }}'">
+                  <i class="fa fa-pencil"></i>
+                  ارسال پاسخ
+                </button>
+                {% else %}
+                <button class="btn btn-success btn-sm" onclick="location.href += '/{{ practice.id }}'">
+                  <i class="fa fa-eye"></i>
+                  مشاهده پاسخ
+                </button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

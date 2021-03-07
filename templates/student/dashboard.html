@@ -1,0 +1,40 @@
+{% extends "student/base.html" %} 
+
+{% block sidebar %} 
+    {% include "student/layout/sidebar.html" with nav_active_item="dashboard" %} 
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "student/layout/breadcrumb.html" with breadcrumb_items="داشبورد" %} 
+{% endblock %}
+
+{% block content %}
+<section class="content">
+  <div class="row">
+    <div class="col-md-6 col-sm-6 col-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-info"
+          ><i class="fa  fa-pencil"></i
+        ></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">تعداد تمرین ها</span>
+          <span class="info-box-number">{{ data.practices_count }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-sm-6 col-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-danger"
+          ><i class="fa fa-film"></i
+        ></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">تعداد ویدیوها</span>
+          <span class="info-box-number">{{ data.videos_count }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

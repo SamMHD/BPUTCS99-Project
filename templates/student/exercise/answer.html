@@ -1,0 +1,122 @@
+{% extends "student/base.html" %} 
+
+{% block title %} ارسال پاسخ تمرین {% endblock %}
+
+{% block sidebar %} 
+    {% include "student/layout/sidebar.html" with nav_active_item="exercise-create" %}
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "student/layout/breadcrumb.html" with breadcrumb_items="داشبورد ارسال-پاسخ-جدید" title="ارسال پاسخ تمرین" %}
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="row">
+        <div class="col">
+        <div class="card card-primary">
+            <div class="card-header">
+            <h3 class="card-title">پاسخ تمرین «{{ practice.title }}»</h3>
+            </div>
+            <form role="form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 col-sm-12">
+                  <div class="info-box">
+                    <span class="info-box-icon bg-primary"><i class="fa fa-comment"></i></span>
+                    <div class="info-box-content">
+                      <span class="info-box-text">توضیحات تمرین:</span>
+                      <span class="info-box-number">{{ practice.detailes }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-sm-12">
+                  <div class="info-box">
+                    <span class="info-box-icon bg-danger"><i class="fa fa-calendar"></i></span>
+                    <div class="info-box-content">
+                      <span class="info-box-text">ددلاین تمرین:</span>
+                      <span class="info-box-number">{{ practice.due_date }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% if not practice.is_send_answer %}
+              <div class="form-group">
+                <label for="videoInput">ارسال فایل پاسخ</label>
+                <div class="input-group">
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="fileInput" name="answerFile">
+                    <label class="custom-file-label" for="fileInput">انتخاب فایل</label>
+                  </div>
+                </div>
+              </div>
+              </div>
+              <div class="card-footer">
+                <button type="submit" class="btn btn-primary">ایجاد تمرین</button>
+              </div>
+              </form>
+              {% else %}
+              <div class="info-box">
+                <span class="info-box-icon bg-info"><i class="fa fa-download"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">پاسخ ارسال شده:</span>
+                  <a download href="{{ MEDIA_URL }}{{ practice.answer }}">دانلود</a>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  function doFormat(x, pattern, mask) {
+  var strippedValue = x.replace(/[^0-9]/g, "");
+  var chars = strippedValue.split('');
+  var count = 0;
+
+  var formatted = '';
+  for (var i=0; i<pattern.length; i++) {
+    const c = pattern[i];
+    if (chars[count]) {
+      if (/\*/.test(c)) {
+        formatted += chars[count];
+        count++;
+      } else {
+        formatted += c;
+      }
+    } else if (mask) {
+      if (mask.split('')[i])
+        formatted += mask.split('')[i];
+    }
+  }
+  return formatted;
+}
+
+document.querySelectorAll('[data-mask]').forEach(function(e) {
+  function format(elem) {
+    const val = doFormat(elem.value, elem.getAttribute('data-format'));
+    elem.value = doFormat(elem.value, elem.getAttribute('data-format'), elem.getAttribute('data-mask'));
+    
+    if (elem.createTextRange) {
+      var range = elem.createTextRange();
+      range.move('character', val.length);
+      range.select();
+    } else if (elem.selectionStart) {
+      elem.focus();
+      elem.setSelectionRange(val.length, val.length);
+    }
+  }
+  e.addEventListener('keyup', function() {
+    format(e);
+  });
+  e.addEventListener('keydown', function() {
+    format(e);
+  });
+  format(e)
+});
+</script>
+{% endblock %}
+

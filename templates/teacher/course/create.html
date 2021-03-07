@@ -1,0 +1,58 @@
+{% extends "teacher/base.html" %} 
+
+{% block title %} ویدیو جدید {% endblock %}
+
+{% block sidebar %} 
+    {% include "teacher/layout/sidebar.html" with nav_active_item="courses-create" %}
+{% endblock %} 
+
+{% block breadcrumb %}
+    {% include "teacher/layout/breadcrumb.html" with breadcrumb_items="داشبورد ویدیوجدید" title="ایجاد تمرین جدید" %}
+{% endblock %}
+
+{% block content %}
+<section class="content">
+<div class="row">
+    <div class="col">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">ایجاد ویدیو جدید</h3>
+        </div>
+        <form role="form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body">
+            {% if video_error %}
+                <div class="alert alert-danger">
+                    {{ video_error }}
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="titleInput">عنوان ویدیو</label>
+                        <input required name="title" type="text" class="form-control" id="titleInput" placeholder="عنوان تمرین را وارد کنید">
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="videoInput">ارسال فایل (فرمت فایل شما باید ویدیویی و حداکثر ۱۰ مگابایت باشد.)</label>
+                        <div class="input-group">
+                        <div class="custom-file">
+                            <input required type="file" class="custom-file-input" id="videoInput" accept="video/*" name="video">
+                            <label class="custom-file-label" for="videoInput">انتخاب فایل</label>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">ایجاد ویدیو</button>
+        </div>
+        </div>
+        </form>
+    </div>
+</div>
+</section>
+{% endblock %}
+
