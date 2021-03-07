@@ -34,17 +34,18 @@
 
   <body class="hold-transition bg-dark login-page">
     <div class="login-box">
-      <div class="login-logo">
+      <img src="../../../../static/dist/img/ut-logo.png" width="300" heigh="300" class="mr-4">
+      <div class="login-logo mt-4">
         <a href="{% url 'login' %}"><b>ورود به پنل دانشجو</b></a>
       </div>
-      <div class="card">
+      <div class="card mt-5">
         <div class="card-body login-card-body">
             {% if error %}
             <div class="alert alert-danger">
                 {{ error }}
             </div>
             {% endif %}
-          <form method="post">
+          <form method="post" >
             {% csrf_token %}
             <div class="input-group mb-3">
               <input required name="email" type="email" class="form-control" placeholder="Email" dir="ltr" />
