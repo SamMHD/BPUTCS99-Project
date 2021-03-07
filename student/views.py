@@ -20,6 +20,10 @@ from teacher.models import Exercise, Teacher, Course
 
 redirect_to_dashboard = redirect(reverse('dashboard'))
 
+def jalali(datetime):
+    return jdatetime.datetime.fromgregorian(
+        datetime=datetime, locale='fa_IR').strftime("%a، %d %b %Y، %H:%M")
+
 class Login(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -104,7 +108,7 @@ class CourseIndex(UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
         courses = Course.objects.all()
         for i in range(len(courses)):
-            courses[i].created_at = convert_to_jalali(courses[i].created_at)
+            courses[i].created_at = jalali(courses[i].created_at)
             courses[i].owner_name = Teacher.objects.get(id=courses[i].owner_id)
         
         return render(
@@ -146,8 +150,8 @@ class Exercise(UserPassesTestMixin, View):
         exercises = Exercise.objects.all()
         student = Student.objects.get(user_id=request.user.id)
         for i in range(len(exercises)):
-            exercises[i].deadline = convert_to_jalali(exercises[i].deadline)
-            exercises[i].created_at = convert_to_jalali(exercises[i].created_at)
+            exercises[i].deadline = jalali(exercises[i].deadline)
+            exercises[i].created_at = jalali(exercises[i].created_at)
             exercises[i].owner_name = Teacher.objects.get(id=exercises[i].owmner_id)
             try:
                 exercises[i].score = Answer.objects.get(
@@ -186,7 +190,7 @@ class ExerciseAnswer(UserPassesTestMixin, View):
         except ObjectDoesNotExist:
             excercise.is_send_answer = False
         
-        excercise.due = convert_to_jalali(excercise.due) 
+        excercise.due = jalali(excercise.due) 
         return render(
             request, 
             'student/excercise/answer.html', 
@@ -203,11 +207,3 @@ class ExerciseAnswer(UserPassesTestMixin, View):
         )
         ans.save()
         return redirect(reverse('exercise-index'))
-
-
-
-
-
-def convert_to_jalali(datetime):
-    return jdatetime.datetime.fromgregorian(
-        datetime=datetime, locale='fa_IR').strftime("%a، %d %b %Y، %H:%M")
