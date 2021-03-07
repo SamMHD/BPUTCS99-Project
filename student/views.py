@@ -64,7 +64,7 @@ class Login(View):
                 )
 
 
-@method_decorator(login_required(login_url='student-login'), name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class Logout(UserPassesTestMixin, View):
     raise_exception = True
 
@@ -76,7 +76,7 @@ class Logout(UserPassesTestMixin, View):
         return redirect(reverse('login'))
 
 
-@method_decorator(login_required(login_url='student-login'), name='dispatch')
+@method_decorator(login_required(login_url='login'), name='dispatch')
 class Dashboard(UserPassesTestMixin, View):
 
     def test_func(self):
