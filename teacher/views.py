@@ -3,21 +3,21 @@ import datetime
 import jdatetime
 
 # Django imports
-from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.conf import settings
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.contrib.auth.decorators import login_required
 
 # Model imports
 from django.contrib.auth.models import User
-from .models import Exercise, Course, Teacher
 from student.models import Answer, Student
+from .models import Exercise, Course, Teacher
 
 def jalali(datetime):
     return jdatetime.datetime.fromgregorian(
