@@ -3,22 +3,20 @@ import datetime
 import jdatetime
 
 # Django imports
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from django.urls import reverse
-from django.http import HttpResponseRedirect
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
 # Model imports
-from .models import Answer, Student
+from .models import Student, Answer
 from teacher.models import Exercise, Teacher, Course
-
-redirect_to_dashboard = redirect(reverse('dashboard'))
 
 def jalali(datetime):
     return jdatetime.datetime.fromgregorian(
@@ -31,11 +29,11 @@ class Login(View):
         if not request.user.is_authenticated:
             return render(request, 'student/login.html')
         else:
-            return redirect_to_dashboard
+            return redirect(reverse('dashboard'))
   
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect_to_dashboard
+            return redirect(reverse('dashboard'))
         else:
             data = request.POST
             try:
@@ -59,7 +57,7 @@ class Login(View):
                 if 'next' in request.GET:
                     return HttpResponseRedirect(request.GET['next'])
                 else:
-                    return redirect_to_dashboard
+                    return redirect(reverse('dashboard'))
             else:
                 return render(
                     request, 
@@ -111,7 +109,7 @@ class CourseIndex(UserPassesTestMixin, View):
         courses = Course.objects.all()
         for i in range(len(courses)):
             courses[i].created_at = jalali(courses[i].created_at)
-            courses[i].owner_name = Teacher.objects.get(id=courses[i].owner_id)
+            courses[i].teacher_name = Teacher.objects.get(id=courses[i].teacher_id)
         
         return render(
             request, 
@@ -131,7 +129,7 @@ class CourseShow(UserPassesTestMixin, View):
 
     def get(self, request, *args, **kwargs):
         course = Course.objects.get(id=kwargs['pk'])
-        course.owner_name = Teacher.objects.get(id=course.owner_id)
+        course.teacher_name = Teacher.objects.get(id=course.teacher_id)
         return render(
             request, 
             'student/course/detail.html', 
@@ -142,7 +140,7 @@ class CourseShow(UserPassesTestMixin, View):
 
 
 @method_decorator(login_required(login_url='login'), name='dispatch')
-class Exercise(UserPassesTestMixin, View):
+class ExerciseIndex(UserPassesTestMixin, View):
     raise_exception = True
 
     def test_func(self):
@@ -152,9 +150,9 @@ class Exercise(UserPassesTestMixin, View):
         exercises = Exercise.objects.all()
         student = Student.objects.get(user_id=request.user.id)
         for i in range(len(exercises)):
-            exercises[i].deadline = jalali(exercises[i].deadline)
+            exercises[i].due_date = jalali(exercises[i].due_date)
             exercises[i].created_at = jalali(exercises[i].created_at)
-            exercises[i].owner_name = Teacher.objects.get(id=exercises[i].owmner_id)
+            exercises[i].teacher_name = Teacher.objects.get(id=exercises[i].teacher_id)
             try:
                 exercises[i].score = Answer.objects.get(
                     exercise_id=exercises[i].id, 
@@ -174,30 +172,30 @@ class Exercise(UserPassesTestMixin, View):
 
 
 @method_decorator(login_required(login_url='login'), name='dispatch')
-class ExerciseAnswer(UserPassesTestMixin, View):
+class ExerciseShow(UserPassesTestMixin, View):
     raise_exception = True
 
     def test_func(self):
         return self.request.user.groups.filter(name='student')
 
     def get(self, request, *args, **kwargs):
-        excercise = Exercise.objects.get(id=kwargs['pk'])
+        exercise = Exercise.objects.get(id=kwargs['pk'])
         try:
-            excercise.answer = Answer.objects.get(
+            exercise.answer = Answer.objects.get(
                 student_id=Student.objects.get(user_id=request.user.id).id,
-                excercise_id=excercise.id
+                exercise_id=exercise.id
             ).file
-            excercise.is_send_answer = True
+            exercise.is_send_answer = True
         
         except ObjectDoesNotExist:
-            excercise.is_send_answer = False
+            exercise.is_send_answer = False
         
-        excercise.due = jalali(excercise.due) 
+        exercise.due_date = jalali(exercise.due_date) 
         return render(
             request, 
-            'student/excercise/answer.html', 
+            'student/exercise/answer.html', 
             {
-                'practice': excercise
+                'practice': exercise
             }
         )
 
@@ -205,7 +203,7 @@ class ExerciseAnswer(UserPassesTestMixin, View):
         ans = Answer(
             file=request.FILES['answerFile'], 
             student_id=Student.objects.get(user_id=request.user.id).id,
-            excercise_id=kwargs['pk']
+            exercise_id=kwargs['pk']
         )
         ans.save()
         return redirect(reverse('exercise-index'))

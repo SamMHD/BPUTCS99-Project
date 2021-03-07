@@ -73,10 +73,10 @@ class Dashboard(UserPassesTestMixin, View):
         return self.request.user.groups.filter(name='teacher')
 
     def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
         data = {
-            'practices_count': Exercise.objects.filter(owner_id=owner_id).count(),
-            'videos_count': Course.objects.filter(owner_id=owner_id).count(),
+            'practices_count': Exercise.objects.filter(teacher_id=teacher_id).count(),
+            'videos_count': Course.objects.filter(teacher_id=teacher_id).count(),
             'students_count': Student.objects.all().count(),
         }
         return render(request, 'teacher/dashboard.html', {'data': data})
@@ -84,17 +84,17 @@ class Dashboard(UserPassesTestMixin, View):
 
 
 @method_decorator(login_required(login_url='teacher-login'), name='dispatch')
-class Exercise(UserPassesTestMixin, View):
+class ExerciseIndex(UserPassesTestMixin, View):
     raise_exception = True
 
     def test_func(self):
         return self.request.user.groups.filter(name='teacher')
 
     def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        exercises = Exercise.objects.filter(owner_id=owner_id)
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        exercises = Exercise.objects.filter(teacher_id=teacher_id)
         for i in range(len(exercises)):
-            exercises[i].due = jalali(exercises[i].due)
+            exercises[i].due_date = jalali(exercises[i].due_date)
             exercises[i].created_at = jalali(exercises[i].created_at)
         return render(
             request, 
@@ -128,7 +128,7 @@ class ExerciseCreate(UserPassesTestMixin, View):
             kwargs['date_error'] = 'invalid date and time'
             return self.get(request, *args, **kwargs)
         exercise = Exercise(
-            title=data['title'], comment=data['comment'], deadline=g_datetime)
+            title=data['title'], detailes=data['comment'], due_date=g_datetime)
         exercise.save()
         return redirect(reverse('teacher-exercises-index'))
 
@@ -140,9 +140,9 @@ class ExercisesAnswers(UserPassesTestMixin, View):
         return self.request.user.groups.filter(name='teacher')
 
     def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
         exercise = get_object_or_404(Exercise, id=kwargs['pk'])
-        if exercise.onwer_id != owner_id:
+        if exercise.teacher_id != teacher_id:
             raise PermissionDenied()
         answers = Answer.objects.filter(exercise_id=kwargs['pk'])
         for i in range(len(answers)):
@@ -170,13 +170,13 @@ class ExercisesAnswerShow(UserPassesTestMixin, View):
         answer.student = get_object_or_404(Student, id=answer.student_id)
         student = get_object_or_404(Student, id=answer.student_id)
         
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        exercise = get_object_or_404(Exercise, id=exercise_id, owner_id=owner_id)
-        exercise.due = jalali(exercise.due)
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        exercise = get_object_or_404(Exercise, id=exercise_id, teacher_id=teacher_id)
+        exercise.due_date = jalali(exercise.due_date)
         return (answer, exercise, student)
 
     def get(self, request, *args, **kwargs):
-        (answer, exercise, student) = self.get_query(request, exercise_id=kwargs['practice_id'], answer_id=kwargs['answer_id'])
+        (answer, exercise, student) = self.get_query(request, exercise_id=kwargs['exercise_id'], answer_id=kwargs['answer_id'])
         template_data = {
             'answer': answer,
             'practice': exercise,
@@ -195,7 +195,7 @@ class ExercisesAnswerShow(UserPassesTestMixin, View):
         if not self.validate_score(score):
             kwargs['score_error'] = 'score is invalid'
             return self.get(request, *args, **kwargs)
-        exercise_id = kwargs['practice_id']
+        exercise_id = kwargs['exercise_id']
 
         answer = get_object_or_404(Answer, id=kwargs['answer_id'])
         answer.score = score
@@ -211,83 +211,8 @@ class ExercisesAnswerShow(UserPassesTestMixin, View):
             return False
 
 
-
 @method_decorator(login_required(login_url='teacher-login'), name='dispatch')
-class Exercise(UserPassesTestMixin, View):
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.groups.filter(name='teacher')
-
-    def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        exercises = Exercise.objects.filter(owner_id=owner_id)
-        for i in range(len(exercises)):
-            exercises[i].due = jalali(exercises[i].due)
-            exercises[i].created_at = jalali(exercises[i].created_at)
-        return render(
-            request, 
-            'teacher/exercise/index.html',
-            {
-                'practices': exercises
-            }
-        )
-
-
-@method_decorator(login_required(login_url='teacher-login'), name='dispatch')
-class ExerciseCreate(UserPassesTestMixin, View):
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.groups.filter(name='teacher')
-
-    def get(self, request, *args, **kwargs):
-        if 'date_error' in kwargs:
-            return render(request, 'teacher/exercise/create.html', {'date_error': kwargs['date_error']})
-        return render(request, 'teacher/exercise/create.html')
-
-    def post(self, request, *args, **kwargs):
-        data = request.POST
-        try:
-            date = list(map(int, data['date'].split("/")))
-            time = list(map(int, data['time'].split(":")))
-            g_datetime = jdatetime.datetime(
-                date[0], date[1], date[2], time[0], time[1]).togregorian()
-        except:
-            kwargs['date_error'] = 'invalid date and time'
-            return self.get(request, *args, **kwargs)
-        exercise = Exercise(
-            title=data['title'], comment=data['comment'], deadline=g_datetime)
-        exercise.save()
-        return redirect(reverse('teacher-exercises-index'))
-
-@method_decorator(login_required(login_url='teacher-login'), name='dispatch')
-class ExercisesAnswers(UserPassesTestMixin, View):
-    raise_exception = True
-
-    def test_func(self):
-        return self.request.user.groups.filter(name='teacher')
-
-    def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        exercise = get_object_or_404(Exercise, id=kwargs['pk'])
-        if exercise.onwer_id != owner_id:
-            raise PermissionDenied()
-        answers = Answer.objects.filter(exercise_id=kwargs['pk'])
-        for i in range(len(answers)):
-            answers[i].created_at = jalali(answers[i].created_at)
-            answers[i].student = get_object_or_404(Student, id=answers[i].student_id)
-        return render(
-            request, 
-            'teacher/exercise/answers.html', 
-            {
-                'answers': answers, 'practice_title': exercise.title
-            }
-        )
-
-
-@method_decorator(login_required(login_url='teacher-login'), name='dispatch')
-class ExercisesAnswerShow(UserPassesTestMixin, View):
+class ExerciseAnswerShow(UserPassesTestMixin, View):
     raise_exception = True
 
     def test_func(self):
@@ -299,13 +224,13 @@ class ExercisesAnswerShow(UserPassesTestMixin, View):
         answer.student = get_object_or_404(Student, id=answer.student_id)
         student = get_object_or_404(Student, id=answer.student_id)
         
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        exercise = get_object_or_404(Exercise, id=exercise_id, owner_id=owner_id)
-        exercise.due = jalali(exercise.due)
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        exercise = get_object_or_404(Exercise, id=exercise_id, teacher_id=teacher_id)
+        exercise.due_date = jalali(exercise.due_date)
         return (answer, exercise, student)
 
     def get(self, request, *args, **kwargs):
-        (answer, exercise, student) = self.get_query(request, exercise_id=kwargs['practice_id'], answer_id=kwargs['answer_id'])
+        (answer, exercise, student) = self.get_query(request, exercise_id=kwargs['exercise_id'], answer_id=kwargs['answer_id'])
         template_data = {
             'answer': answer,
             'practice': exercise,
@@ -324,7 +249,7 @@ class ExercisesAnswerShow(UserPassesTestMixin, View):
         if not self.validate_score(score):
             kwargs['score_error'] = 'score is invalid'
             return self.get(request, *args, **kwargs)
-        exercise_id = kwargs['practice_id']
+        exercise_id = kwargs['exercise_id']
 
         answer = get_object_or_404(Answer, id=kwargs['answer_id'])
         answer.score = score
@@ -348,8 +273,8 @@ class CoursesIndex(UserPassesTestMixin, View):
         return self.request.user.groups.filter(name='teacher')
 
     def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        courses = Course.objects.filter(owner_id=owner_id)
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        courses = Course.objects.filter(teacher_id=teacher_id)
         for i in range(len(courses)):
             courses[i].created_at = jalali(courses[i].created_at)
         return render(request, 'teacher/course/index.html', {'videos': courses})
@@ -371,7 +296,7 @@ class CourseCreate(UserPassesTestMixin, View):
         data = request.POST
         video = request.FILES['video']
         print(video.size)
-        if video.content_type.find('course/') == -1:
+        if video.content_type.find('video/') == -1:
             kwargs['video_error'] = "wrong format"
             return self.get(request, *args, **kwargs)
         if video.size > settings.MAX_UPLOAD_SIZE * 1000 * 1000:
@@ -389,7 +314,7 @@ class CoursesShow(UserPassesTestMixin, View):
         return self.request.user.groups.filter(name='teacher')
 
     def get(self, request, *args, **kwargs):
-        owner_id = get_object_or_404(Teacher, user_id=request.user.id).id
-        course = get_object_or_404(Course, id=kwargs['pk'], owner_id=owner_id)
+        teacher_id = get_object_or_404(Teacher, user_id=request.user.id).id
+        course = get_object_or_404(Course, id=kwargs['pk'], teacher_id=teacher_id)
         return render(request, 'teacher/course/detail.html', {'video': course})
 

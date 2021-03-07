@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.models import AbstractUser
 
 class Teacher(models.Model):
     name = models.CharField(max_length=200)
@@ -12,7 +11,7 @@ class Teacher(models.Model):
 class Course(models.Model):
     title = models.CharField(max_length=200)
     video = models.FileField(upload_to='courses/')
-    owner = models.ForeignKey(Teacher, on_delete=models.CASCADE, default=1)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, default=1)
 
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -23,7 +22,7 @@ class Course(models.Model):
 class Exercise(models.Model):
     title = models.CharField(max_length=50)
     detailes = models.CharField(max_length=500)
-    owner = models.ForeignKey(Teacher, on_delete=models.CASCADE, default=1)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, default=1)
     
     due_date = models.DateTimeField(null=False)
     updated_at = models.DateTimeField(auto_now=True)

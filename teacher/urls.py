@@ -1,26 +1,39 @@
 from django.urls import path
 
-from .views import Exercises, ExercisesAnswers, ExerciseCreate, ExerciseAnswerShow,
-from .views import CourcesIndex, CourcesShow, CourseCreate
+from .views import ExerciseIndex, ExercisesAnswers
+from .views import ExerciseCreate, ExerciseAnswerShow
+from .views import CoursesIndex, CoursesShow, CourseCreate
 from .views import Login, Dashboard, Logout
 
 urlpatterns = [
     # authentication endpoints
-    path('login', Login.as_view(), name='teacher-login'),
-    path('logout', Logout.as_view(), name='teacher-logout'),
+    path(
+        'login', 
+        Login.as_view(), 
+        name='teacher-login'
+    ),
+    path(
+        'logout', 
+        Logout.as_view(), 
+        name='teacher-logout'
+    ),
     
     # dashboard endpoint
-    path('dashboard', Dashboard.as_view(), name='teacher-dashboard'),
+    path(
+        'dashboard', 
+        Dashboard.as_view(), 
+        name='teacher-dashboard'
+    ),
 
     # course endpoints
     path(
         'courses', 
-        CourcesIndex.as_view(), 
-        name='teacher-courses-list'
+        CoursesIndex.as_view(), 
+        name='teacher-courses-index'
     ),
     path(
         'courses/<int:pk>', 
-        CourcesShow.as_view(), 
+        CoursesShow.as_view(), 
         name='courses-detail'
     ),
     path(
@@ -32,8 +45,8 @@ urlpatterns = [
     # exercise endpoints
     path(
         'exercises', 
-        Exercises.as_view(), 
-        name='teacher-exercises-list'
+        ExerciseIndex.as_view(), 
+        name='teacher-exercises-index'
     ),
     path(
         'exercises/create', 
