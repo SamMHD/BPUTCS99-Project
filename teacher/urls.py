@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import Exercises, ExercisesAnswers, ExerciseCreate, ExerciseAnswerDetail,
-from .views import CourcesList, CourcesDetail, CourseCreate
+from .views import Exercises, ExercisesAnswers, ExerciseCreate, ExerciseAnswerShow,
+from .views import CourcesIndex, CourcesShow, CourseCreate
 from .views import Login, Dashboard, Logout
 
 urlpatterns = [
@@ -14,19 +14,19 @@ urlpatterns = [
 
     # course endpoints
     path(
-        'videos', 
-        CourcesList.as_view(), 
-        name='teacher-videos-list'
+        'courses', 
+        CourcesIndex.as_view(), 
+        name='teacher-courses-list'
     ),
     path(
-        'videos/<int:pk>', 
-        CourcesDetail.as_view(), 
-        name='videos-detail'
+        'courses/<int:pk>', 
+        CourcesShow.as_view(), 
+        name='courses-detail'
     ),
     path(
-        'videos/create', 
+        'courses/create', 
         CourseCreate.as_view(), 
-        name='video-create'
+        name='courses-create'
     ),
     
     # exercise endpoints
@@ -47,7 +47,7 @@ urlpatterns = [
     ),
     path(
         'exercises/<int:exercise_id>/answers/<int:answer_id>', 
-        ExerciseAnswerDetail.as_view(),
-        name='exercises-answer-detail'
+        ExerciseAnswerShow.as_view(),
+        name='exercises-answer-show'
     ),
 ]
