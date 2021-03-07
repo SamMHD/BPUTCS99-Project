@@ -22,7 +22,9 @@ redirect_to_dashboard = redirect(reverse('dashboard'))
 
 def jalali(datetime):
     return jdatetime.datetime.fromgregorian(
-        datetime=datetime, locale='fa_IR').strftime("%a، %d %b %Y، %H:%M")
+        datetime=datetime, 
+        locale='fa_IR'
+    ).strftime("%a، %d %b %Y، %H:%M")
 
 class Login(View):
     def get(self, request, *args, **kwargs):
